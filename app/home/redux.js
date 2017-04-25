@@ -11,7 +11,8 @@ const init = {
 		first: '',
 		last: ''
 	},
-	hello: false
+	showLogin: true,
+	hello: false,
 };
 
 /* ============================================================================
@@ -19,9 +20,8 @@ ACTIONS CONSTANTS
 ============================================================================= */
 
 const SAY_HELLO = 'home/SAY_HELLO';
-const CLEAR_FORM = 'home/CLEAR_FORM';
-const CHANGE_FIRST = 'home/CHANGE_FIRST';
-const CHANGE_LAST = 'home/CHANGE_LAST';
+
+const SET_LOGIN_BUTTON_STATE = 'home/SET_LOGIN_BUTTON_STATE';
 
 /* ============================================================================
 ACTIONS - ACTION CREATORS
@@ -29,43 +29,21 @@ ACTIONS - ACTION CREATORS
 
 export const sayHello = createAction(SAY_HELLO);
 
-export const clearForm = createAction(CLEAR_FORM);
-
-export const changeFirst = createAction(CHANGE_FIRST, (first) => ({first}));
-
-export const changeLast = createAction(CHANGE_LAST, (last) => ({last}));
-
+export const setLoginButtonState = createAction(SET_LOGIN_BUTTON_STATE, (bool) => ({bool}));
 /* ============================================================================
 REDUCER --- ACTION HANDLER
 ============================================================================= */
 
 export default handleActions({
+	[SET_LOGIN_BUTTON_STATE]: (state, action) => {
+		console.log(action);
+		return {
+			...state, 
+			showLogin: action.payload.bool
+		}
+	},
 	[SAY_HELLO] : state => ({
 		...state,
 		hello: true
-	}),
-	[CHANGE_FIRST] : (state, action) => {
-		return {
-			...state,
-			user: {
-				...state.user,
-				first: action.payload.first
-			}	
-		}
-	},
-	[CHANGE_LAST] : (state, action) => {
-		return {
-			...state,
-			user: {
-				...state.user,
-				last: action.payload.last
-			}	
-		}
-	},
-	[CLEAR_FORM] : (state, action) => {
-		return {
-			...state,
-			user: init.user
-		}
-	}
+	})
 }, init);

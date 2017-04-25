@@ -25792,7 +25792,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.changeLast = exports.changeFirst = exports.clearForm = exports.sayHello = undefined;
+	exports.setLoginButtonState = exports.sayHello = undefined;
 	
 	var _handleActions;
 	
@@ -25813,6 +25813,7 @@
 			first: '',
 			last: ''
 		},
+		showLogin: true,
 		hello: false
 	};
 	
@@ -25821,9 +25822,8 @@
 	============================================================================= */
 	
 	var SAY_HELLO = 'home/SAY_HELLO';
-	var CLEAR_FORM = 'home/CLEAR_FORM';
-	var CHANGE_FIRST = 'home/CHANGE_FIRST';
-	var CHANGE_LAST = 'home/CHANGE_LAST';
+	
+	var SET_LOGIN_BUTTON_STATE = 'home/SET_LOGIN_BUTTON_STATE';
 	
 	/* ============================================================================
 	ACTIONS - ACTION CREATORS
@@ -25831,39 +25831,21 @@
 	
 	var sayHello = exports.sayHello = (0, _reduxActions.createAction)(SAY_HELLO);
 	
-	var clearForm = exports.clearForm = (0, _reduxActions.createAction)(CLEAR_FORM);
-	
-	var changeFirst = exports.changeFirst = (0, _reduxActions.createAction)(CHANGE_FIRST, function (first) {
-		return { first: first };
+	var setLoginButtonState = exports.setLoginButtonState = (0, _reduxActions.createAction)(SET_LOGIN_BUTTON_STATE, function (bool) {
+		return { bool: bool };
 	});
-	
-	var changeLast = exports.changeLast = (0, _reduxActions.createAction)(CHANGE_LAST, function (last) {
-		return { last: last };
-	});
-	
 	/* ============================================================================
 	REDUCER --- ACTION HANDLER
 	============================================================================= */
 	
-	exports.default = (0, _reduxActions.handleActions)((_handleActions = {}, _defineProperty(_handleActions, SAY_HELLO, function (state) {
+	exports.default = (0, _reduxActions.handleActions)((_handleActions = {}, _defineProperty(_handleActions, SET_LOGIN_BUTTON_STATE, function (state, action) {
+		console.log(action);
+		return _extends({}, state, {
+			showLogin: action.payload.bool
+		});
+	}), _defineProperty(_handleActions, SAY_HELLO, function (state) {
 		return _extends({}, state, {
 			hello: true
-		});
-	}), _defineProperty(_handleActions, CHANGE_FIRST, function (state, action) {
-		return _extends({}, state, {
-			user: _extends({}, state.user, {
-				first: action.payload.first
-			})
-		});
-	}), _defineProperty(_handleActions, CHANGE_LAST, function (state, action) {
-		return _extends({}, state, {
-			user: _extends({}, state.user, {
-				last: action.payload.last
-			})
-		});
-	}), _defineProperty(_handleActions, CLEAR_FORM, function (state, action) {
-		return _extends({}, state, {
-			user: init.user
 		});
 	}), _handleActions), init);
 
@@ -37358,6 +37340,10 @@
 	
 	var actions = _interopRequireWildcard(_redux2);
 	
+	var _flux_sdk = __webpack_require__(/*! ../../flux_sdk */ 421);
+	
+	var Flux = _interopRequireWildcard(_flux_sdk);
+	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -37374,61 +37360,50 @@
 		function HomePage(props) {
 			_classCallCheck(this, HomePage);
 	
-			var _this = _possibleConstructorReturn(this, (HomePage.__proto__ || Object.getPrototypeOf(HomePage)).call(this, props));
-	
-			_this.onSayHello = function () {
-				_this.props.sayHello();
-			};
-	
-			_this.onClearForm = function (e) {
-				e.preventDefault();
-				_this.props.clearForm();
-			};
-	
-			_this.onChangeFirst = function (el) {
-				_this.props.changeFirst(el.target.value);
-			};
-	
-			_this.onChangeLast = function (el) {
-				_this.props.changeLast(el.target.value);
-			};
-			return _this;
+			return _possibleConstructorReturn(this, (HomePage.__proto__ || Object.getPrototypeOf(HomePage)).call(this, props));
 		}
 	
 		_createClass(HomePage, [{
+			key: 'fluxLogin',
+			value: function fluxLogin() {
+				Flux.helpers.redirectToFluxLogin();
+			}
+		}, {
+			key: 'fluxLogout',
+			value: function fluxLogout() {
+				//need to figure out how to end session with flux
+				this.props.setLoginButtonState(false);
+			}
+		}, {
+			key: 'componentWillMount',
+			value: function componentWillMount() {
+				var _this2 = this;
+	
+				Flux.helpers.storeFluxUser().then(function () {
+					return Flux.helpers.isLoggedIn();
+				}).then(function (isLoggedIn) {
+					if (!isLoggedIn) {
+						console.log('here');
+						_this2.props.setLoginButtonState(true);
+					} else {
+						_this2.props.setLoginButtonState(false);
+					}
+				});
+			}
+		}, {
 			key: 'render',
 			value: function render() {
 				return _react2.default.createElement(
 					'div',
 					{ className: 'home-page' },
-					_react2.default.createElement(
-						'div',
-						null,
-						'Hello World!'
-					),
-					_react2.default.createElement(
+					this.props.showLogin ? _react2.default.createElement(
 						'button',
-						{ onClick: this.onSayHello.bind() },
-						'SAY HELLO'
-					),
-					_react2.default.createElement(
-						'form',
-						null,
-						_react2.default.createElement('input', {
-							placeholder: 'First',
-							value: this.props.user.first,
-							onChange: this.onChangeFirst.bind(this)
-						}),
-						_react2.default.createElement('input', {
-							placeholder: 'Last',
-							value: this.props.user.last,
-							onChange: this.onChangeLast.bind(this)
-						}),
-						_react2.default.createElement(
-							'button',
-							{ onClick: this.onClearForm.bind() },
-							'Clear Form'
-						)
+						{ onClick: this.fluxLogin.bind() },
+						'LOGIN'
+					) : _react2.default.createElement(
+						'button',
+						{ onClick: this.fluxLogout.bind() },
+						'LOG OUT'
 					)
 				);
 			}
@@ -37438,25 +37413,54 @@
 	}(_react.Component);
 	
 	//PROPTYPES
-	
-	
-	HomePage.propTypes = {
-		hello: _react2.default.PropTypes.bool.isRequired,
-		user: _react2.default.PropTypes.shape({
-			first: _react2.default.PropTypes.string.isRequired,
-			last: _react2.default.PropTypes.string.isRequired
-		}).isRequired,
-		sayHello: _react2.default.PropTypes.func.isRequired,
-		clearForm: _react2.default.PropTypes.func.isRequired,
-		changeLast: _react2.default.PropTypes.func.isRequired,
-		changeFirst: _react2.default.PropTypes.func.isRequired
-	};
+	// HomePage.propTypes = {
+	// 	hello: React.PropTypes.bool.isRequired,
+	// 	user: React.PropTypes.shape({
+	// 		first: React.PropTypes.string.isRequired,
+	// 		last: React.PropTypes.string.isRequired
+	// 	}).isRequired,
+	// 	sayHello: React.PropTypes.func.isRequired,
+	// 	clearForm: React.PropTypes.func.isRequired,
+	// 	changeLast: React.PropTypes.func.isRequired, 
+	// 	changeFirst: React.PropTypes.func.isRequired 
+	// }
 	
 	// CONNECT TO REDUX AND EXPORT COMPONENT 
+	
+	
 	var mapStateToProps = function mapStateToProps(state, ownProps) {
 		return state.home;
 	};
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(HomePage);
+
+/***/ }),
+/* 413 */,
+/* 414 */,
+/* 415 */,
+/* 416 */,
+/* 417 */,
+/* 418 */,
+/* 419 */,
+/* 420 */,
+/* 421 */
+/*!*************************!*\
+  !*** ./app/flux_sdk.js ***!
+  \*************************/
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	var config = {
+		url: 'http://localhost:3002',
+		flux_url: 'https://flux.io',
+		flux_client_id: 'javier+jorge@flux.io'
+	};
+	
+	var sdk = exports.sdk = new FluxSdk(config.flux_client_id, { redirectUri: config.url, fluxUrl: config.flux_url });
+	var helpers = exports.helpers = new FluxHelpers(sdk);
 
 /***/ })
 /******/ ]);
