@@ -21,7 +21,7 @@ app.get('*', function(request, response) {
 
 // SERVER
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 8080;
 
 let server = require('http').createServer(app);
 server = server.listen(port);

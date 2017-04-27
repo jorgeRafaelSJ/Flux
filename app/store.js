@@ -6,7 +6,7 @@ import reducer from './reducer'
 
 let middleware;
 let enhancer;
-if(window.location.host == "localhost:3002") {
+if(window.location.host == "localhost:8080") {
 	middleware = applyMiddleware(thunk, logger());
 	/* eslint-disable no-underscore-dangle */
 	const composeEnhancers = 

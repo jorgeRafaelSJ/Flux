@@ -23313,7 +23313,7 @@
 	
 	var middleware = void 0;
 	var enhancer = void 0;
-	if (window.location.host == "localhost:3002") {
+	if (window.location.host == "localhost:8080") {
 		middleware = (0, _redux.applyMiddleware)(_reduxThunk2.default, (0, _reduxLogger2.default)());
 		/* eslint-disable no-underscore-dangle */
 		var composeEnhancers = (typeof window === "undefined" ? "undefined" : _typeof(window)) === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
@@ -25792,9 +25792,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.setLoginButtonState = exports.sayHello = undefined;
-	
-	var _handleActions;
+	exports.setLoginButtonState = undefined;
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
@@ -25809,27 +25807,18 @@
 	============================================================================= */
 	
 	var init = {
-		user: {
-			first: '',
-			last: ''
-		},
-		showLogin: true,
-		hello: false
+		showLogin: true
 	};
 	
 	/* ============================================================================
 	ACTIONS CONSTANTS
 	============================================================================= */
 	
-	var SAY_HELLO = 'home/SAY_HELLO';
-	
 	var SET_LOGIN_BUTTON_STATE = 'home/SET_LOGIN_BUTTON_STATE';
 	
 	/* ============================================================================
 	ACTIONS - ACTION CREATORS
 	============================================================================= */
-	
-	var sayHello = exports.sayHello = (0, _reduxActions.createAction)(SAY_HELLO);
 	
 	var setLoginButtonState = exports.setLoginButtonState = (0, _reduxActions.createAction)(SET_LOGIN_BUTTON_STATE, function (bool) {
 		return { bool: bool };
@@ -25838,16 +25827,11 @@
 	REDUCER --- ACTION HANDLER
 	============================================================================= */
 	
-	exports.default = (0, _reduxActions.handleActions)((_handleActions = {}, _defineProperty(_handleActions, SET_LOGIN_BUTTON_STATE, function (state, action) {
-		console.log(action);
+	exports.default = (0, _reduxActions.handleActions)(_defineProperty({}, SET_LOGIN_BUTTON_STATE, function (state, action) {
 		return _extends({}, state, {
 			showLogin: action.payload.bool
 		});
-	}), _defineProperty(_handleActions, SAY_HELLO, function (state) {
-		return _extends({}, state, {
-			hello: true
-		});
-	}), _handleActions), init);
+	}), init);
 
 /***/ }),
 /* 227 */
@@ -37340,9 +37324,13 @@
 	
 	var actions = _interopRequireWildcard(_redux2);
 	
-	var _flux_sdk = __webpack_require__(/*! ../../flux_sdk */ 421);
+	var _flux_sdk = __webpack_require__(/*! ../../flux_sdk */ 413);
 	
 	var Flux = _interopRequireWildcard(_flux_sdk);
+	
+	var _fluxViewport = __webpack_require__(/*! ./flux-viewport.js */ 415);
+	
+	var _fluxViewport2 = _interopRequireDefault(_fluxViewport);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -37372,7 +37360,8 @@
 			key: 'fluxLogout',
 			value: function fluxLogout() {
 				//need to figure out how to end session with flux
-				this.props.setLoginButtonState(false);
+				delete window.localStorage['__FLUX__'];
+				this.props.setLoginButtonState(true);
 			}
 		}, {
 			key: 'componentWillMount',
@@ -37383,7 +37372,6 @@
 					return Flux.helpers.isLoggedIn();
 				}).then(function (isLoggedIn) {
 					if (!isLoggedIn) {
-						console.log('here');
 						_this2.props.setLoginButtonState(true);
 					} else {
 						_this2.props.setLoginButtonState(false);
@@ -37393,18 +37381,21 @@
 		}, {
 			key: 'render',
 			value: function render() {
+	
+				var loginLogout = this.props.showLogin ? _react2.default.createElement(
+					'button',
+					{ onClick: this.fluxLogin.bind(this) },
+					'LOGIN'
+				) : _react2.default.createElement(
+					'button',
+					{ onClick: this.fluxLogout.bind(this) },
+					'LOG OUT'
+				);
+	
 				return _react2.default.createElement(
 					'div',
 					{ className: 'home-page' },
-					this.props.showLogin ? _react2.default.createElement(
-						'button',
-						{ onClick: this.fluxLogin.bind() },
-						'LOGIN'
-					) : _react2.default.createElement(
-						'button',
-						{ onClick: this.fluxLogout.bind() },
-						'LOG OUT'
-					)
+					loginLogout
 				);
 			}
 		}]);
@@ -37434,15 +37425,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(HomePage);
 
 /***/ }),
-/* 413 */,
-/* 414 */,
-/* 415 */,
-/* 416 */,
-/* 417 */,
-/* 418 */,
-/* 419 */,
-/* 420 */,
-/* 421 */
+/* 413 */
 /*!*************************!*\
   !*** ./app/flux_sdk.js ***!
   \*************************/
@@ -37454,13 +37437,82 @@
 		value: true
 	});
 	var config = {
-		url: 'http://localhost:3002',
-		flux_url: 'https://flux.io',
-		flux_client_id: 'javier+jorge@flux.io'
+		url: 'http://localhost:8080',
+		flux_url: 'https://flux.io/',
+		flux_client_id: '49de46bb-50cf-4e07-9755-69ae456e8b36'
 	};
 	
 	var sdk = exports.sdk = new FluxSdk(config.flux_client_id, { redirectUri: config.url, fluxUrl: config.flux_url });
 	var helpers = exports.helpers = new FluxHelpers(sdk);
+
+/***/ }),
+/* 414 */,
+/* 415 */
+/*!**********************************************!*\
+  !*** ./app/home/components/flux-viewport.js ***!
+  \**********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _redux = __webpack_require__(/*! redux */ 192);
+	
+	var _reactRedux = __webpack_require__(/*! react-redux */ 322);
+	
+	var _redux2 = __webpack_require__(/*! ../redux */ 226);
+	
+	var actions = _interopRequireWildcard(_redux2);
+	
+	var _flux_sdk = __webpack_require__(/*! ../../flux_sdk */ 413);
+	
+	var Flux = _interopRequireWildcard(_flux_sdk);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var FluxViewport = function (_Component) {
+		_inherits(FluxViewport, _Component);
+	
+		function FluxViewport(props) {
+			_classCallCheck(this, FluxViewport);
+	
+			return _possibleConstructorReturn(this, (FluxViewport.__proto__ || Object.getPrototypeOf(FluxViewport)).call(this, props));
+		}
+	
+		_createClass(FluxViewport, [{
+			key: 'render',
+			value: function render() {
+				return _react2.default.createElement('div', { id: 'viewport' });
+			}
+		}]);
+	
+		return FluxViewport;
+	}(_react.Component);
+	
+	// CONNECT TO REDUX AND EXPORT COMPONENT 
+	
+	
+	var mapStateToProps = function mapStateToProps(state, ownProps) {
+		return state.home;
+	};
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(FluxViewport);
 
 /***/ })
 /******/ ]);

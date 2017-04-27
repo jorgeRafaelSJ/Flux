@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as actions from '../redux';
+
 import * as Flux from '../../flux_sdk';
+import FluxViewport from './flux-viewport.js';
 
 class HomePage extends Component {
 	constructor(props) {
 		super(props);
-
 	};
 
 	fluxLogin() {
@@ -16,7 +17,8 @@ class HomePage extends Component {
 
 	fluxLogout() {
 		//need to figure out how to end session with flux
-		this.props.setLoginButtonState(false);
+		delete window.localStorage['__FLUX__'];
+		this.props.setLoginButtonState(true);
 	}
 
 	componentWillMount() {
@@ -26,19 +28,22 @@ class HomePage extends Component {
 			})
 			.then((isLoggedIn) => {
 				if(!isLoggedIn){
-					console.log('here');
 					this.props.setLoginButtonState(true);
 				} else {
 					this.props.setLoginButtonState(false);
 				}
 			})
 	}
+
 	render() {
+
+		let loginLogout = this.props.showLogin ? 
+					<button onClick={this.fluxLogin.bind(this)}>LOGIN</button> : 
+					<button onClick={this.fluxLogout.bind(this)}>LOG OUT</button>;
+
 		return(
 			<div className="home-page">
-				{	this.props.showLogin ? 
-					<button onClick={this.fluxLogin.bind()}>LOGIN</button> : 
-					<button onClick={this.fluxLogout.bind()}>LOG OUT</button> }
+				{ loginLogout }
 			</div>
 		);
 	}
