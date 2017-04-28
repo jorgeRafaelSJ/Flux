@@ -10,43 +10,33 @@ class Viewport extends Component {
 		this.viewport;
 	};
 
-
+	getValue(project, cell) {
+		let dt = this.props.user.getDataTable(project.id);
+		return dt.getCell(cell.id).fetch();
+	}
 
 	render() {
 
 		return(
-			<div>	
-				<div id="view"></div>
-			</div>
+			<div id="view"></div>
 		)
 	}
 
 	componentDidMount() {
 
-		let box_data = [
-		  {
-		    "dimensions": [
-		      2,
-		      2,
-		      2
-		    ],
-		    "origin": [
-		      0,
-		      0,
-		      0
-		    ],
-		    "primitive": "block",
-		    "units": {
-		      "dimensions": "meters",
-		      "origin": "meters"
-		    }
-		  }
-		];
-
 		this.viewport = new FluxViewport(document.querySelector("#view"));
 		this.viewport.setupDefaultLighting();
-		this.viewport.setGeometryEntity(box_data);
-		console.log(this.viewport.running);
+		this.viewport.setGeometryEntity(null);
+	}
+
+	componentDidUpdate() {
+		console.log('new viewport');
+		this.props.cells_in_view.forEach((cell)=> {
+			this.getValue(this.props.selected_project, cell)
+				.then((response) => {
+					console.log(response);
+				});
+		})
 	}
 }
 

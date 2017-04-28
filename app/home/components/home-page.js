@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import * as actions from '../redux';
 
 import * as Flux from '../../flux_sdk';
-import Viewport from './flux-viewport.js';
+import Viewport from './flux-viewport';
+import Sidebar from './sidebar';
 
 class HomePage extends Component {
 	constructor(props) {
@@ -49,7 +50,9 @@ class HomePage extends Component {
 					<button className="login-logout-btn" 
 					onClick={this.fluxLogout.bind(this)}>Log Out</button>;
 
-		let viewport = this.props.showLogin ? null : <Viewport></Viewport>;
+		//children components only get instantiated when necessary props are truthy
+		let sidebar = this.props.projects ? <Sidebar></Sidebar> : null;
+		let viewport = !this.props.showLogin && this.props.projects ?  <Viewport></Viewport> : null;
 
 		return(
 			<div className="home-page">
@@ -60,16 +63,17 @@ class HomePage extends Component {
 					</div>
 				</div>
 
-				{viewport}
+				<div id="container"> 
+					{ sidebar }
+					{ viewport }
+				</div>
 			</div>
 		);
 	}
 }
 
-
-//PROPTYPES
+// PROPTYPES
 // HomePage.propTypes = {
-// 	hello: React.PropTypes.bool.isRequired,
 // 	user: React.PropTypes.shape({
 // 		first: React.PropTypes.string.isRequired,
 // 		last: React.PropTypes.string.isRequired

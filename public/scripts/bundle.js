@@ -25792,7 +25792,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.setInitState = exports.setProjects = exports.setUser = exports.setLoginButtonState = undefined;
+	exports.viewCell = exports.setCells = exports.setInitState = exports.selectProject = exports.setProjects = exports.setUser = exports.setLoginButtonState = undefined;
 	
 	var _handleActions;
 	
@@ -25804,6 +25804,8 @@
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	/* ============================================================================
 	REDUCER INIT VALUE
 	============================================================================= */
@@ -25811,7 +25813,10 @@
 	var init = {
 		showLogin: true,
 		user: null,
-		projects: null
+		projects: null,
+		selected_project: null,
+		selected_project_cells: [],
+		cells_in_view: []
 	};
 	
 	/* ============================================================================
@@ -25822,6 +25827,9 @@
 	var SET_USER = 'home/SET_USER';
 	var SET_PROJECTS = 'home/SET_PROJECTS';
 	var SET_INIT_STATE = 'home/SET_INIT_STATE';
+	var SELECT_PROJECT = 'home/SELECT_PROJECT';
+	var SET_CELLS = 'home/SET_CELLS';
+	var VIEW_CELL = 'home/VIEW_CELL';
 	
 	/* ============================================================================
 	ACTIONS - ACTION CREATORS
@@ -25839,7 +25847,19 @@
 		return { projects: projects };
 	});
 	
+	var selectProject = exports.selectProject = (0, _reduxActions.createAction)(SELECT_PROJECT, function (selected_project) {
+		return { selected_project: selected_project };
+	});
+	
 	var setInitState = exports.setInitState = (0, _reduxActions.createAction)(SET_INIT_STATE);
+	
+	var setCells = exports.setCells = (0, _reduxActions.createAction)(SET_CELLS, function (cells) {
+		return { cells: cells };
+	});
+	
+	var viewCell = exports.viewCell = (0, _reduxActions.createAction)(VIEW_CELL, function (cell) {
+		return { cell: cell };
+	});
 	
 	/* ============================================================================
 	REDUCER --- ACTION HANDLER
@@ -25858,6 +25878,22 @@
 	}), _defineProperty(_handleActions, SET_PROJECTS, function (state, action) {
 		return _extends({}, state, {
 			projects: action.payload.projects
+		});
+	}), _defineProperty(_handleActions, SELECT_PROJECT, function (state, action) {
+		return _extends({}, state, {
+			selected_project_cells: [],
+			selected_project: action.payload.selected_project
+		});
+	}), _defineProperty(_handleActions, SET_CELLS, function (state, action) {
+		return _extends({}, state, {
+			selected_project_cells: action.payload.cells
+		});
+	}), _defineProperty(_handleActions, VIEW_CELL, function (state, action) {
+		var cellsArray = [].concat(_toConsumableArray(state.cells_in_view));
+		cellsArray.push(action.payload.cell);
+	
+		return _extends({}, state, {
+			cells_in_view: cellsArray
 		});
 	}), _handleActions), init);
 
@@ -37356,9 +37392,13 @@
 	
 	var Flux = _interopRequireWildcard(_flux_sdk);
 	
-	var _fluxViewport = __webpack_require__(/*! ./flux-viewport.js */ 415);
+	var _fluxViewport = __webpack_require__(/*! ./flux-viewport */ 415);
 	
 	var _fluxViewport2 = _interopRequireDefault(_fluxViewport);
+	
+	var _sidebar = __webpack_require__(/*! ./sidebar */ 416);
+	
+	var _sidebar2 = _interopRequireDefault(_sidebar);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -37427,7 +37467,9 @@
 					'Log Out'
 				);
 	
-				var viewport = this.props.showLogin ? null : _react2.default.createElement(_fluxViewport2.default, null);
+				//children components only get instantiated when necessary props are truthy
+				var sidebar = this.props.projects ? _react2.default.createElement(_sidebar2.default, null) : null;
+				var viewport = !this.props.showLogin && this.props.projects ? _react2.default.createElement(_fluxViewport2.default, null) : null;
 	
 				return _react2.default.createElement(
 					'div',
@@ -37441,7 +37483,12 @@
 							loginLogout
 						)
 					),
-					viewport
+					_react2.default.createElement(
+						'div',
+						{ id: 'container' },
+						sidebar,
+						viewport
+					)
 				);
 			}
 		}]);
@@ -37449,9 +37496,8 @@
 		return HomePage;
 	}(_react.Component);
 	
-	//PROPTYPES
+	// PROPTYPES
 	// HomePage.propTypes = {
-	// 	hello: React.PropTypes.bool.isRequired,
 	// 	user: React.PropTypes.shape({
 	// 		first: React.PropTypes.string.isRequired,
 	// 		last: React.PropTypes.string.isRequired
@@ -37546,33 +37592,36 @@
 		}
 	
 		_createClass(Viewport, [{
+			key: 'getValue',
+			value: function getValue(project, cell) {
+				var dt = this.props.user.getDataTable(project.id);
+				return dt.getCell(cell.id).fetch();
+			}
+		}, {
 			key: 'render',
 			value: function render() {
 	
-				return _react2.default.createElement(
-					'div',
-					null,
-					_react2.default.createElement('div', { id: 'view' })
-				);
+				return _react2.default.createElement('div', { id: 'view' });
 			}
 		}, {
 			key: 'componentDidMount',
 			value: function componentDidMount() {
 	
-				var box_data = [{
-					"dimensions": [2, 2, 2],
-					"origin": [0, 0, 0],
-					"primitive": "block",
-					"units": {
-						"dimensions": "meters",
-						"origin": "meters"
-					}
-				}];
-	
 				this.viewport = new FluxViewport(document.querySelector("#view"));
 				this.viewport.setupDefaultLighting();
-				this.viewport.setGeometryEntity(box_data);
-				console.log(this.viewport.running);
+				this.viewport.setGeometryEntity(null);
+			}
+		}, {
+			key: 'componentDidUpdate',
+			value: function componentDidUpdate() {
+				var _this2 = this;
+	
+				console.log('new viewport');
+				this.props.cells_in_view.forEach(function (cell) {
+					_this2.getValue(_this2.props.selected_project, cell).then(function (response) {
+						console.log(response);
+					});
+				});
 			}
 		}]);
 	
@@ -37586,6 +37635,162 @@
 		return state.home;
 	};
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(Viewport);
+
+/***/ }),
+/* 416 */
+/*!****************************************!*\
+  !*** ./app/home/components/sidebar.js ***!
+  \****************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _redux = __webpack_require__(/*! redux */ 192);
+	
+	var _reactRedux = __webpack_require__(/*! react-redux */ 322);
+	
+	var _redux2 = __webpack_require__(/*! ../redux */ 226);
+	
+	var actions = _interopRequireWildcard(_redux2);
+	
+	var _flux_sdk = __webpack_require__(/*! ../../flux_sdk */ 413);
+	
+	var Flux = _interopRequireWildcard(_flux_sdk);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Sidebar = function (_Component) {
+		_inherits(Sidebar, _Component);
+	
+		function Sidebar(props) {
+			_classCallCheck(this, Sidebar);
+	
+			var _this = _possibleConstructorReturn(this, (Sidebar.__proto__ || Object.getPrototypeOf(Sidebar)).call(this, props));
+	
+			_this.dataTables = {};
+			return _this;
+		}
+	
+		_createClass(Sidebar, [{
+			key: 'selectProject',
+			value: function selectProject(project, e) {
+				var _this2 = this;
+	
+				this.props.selectProject(project);
+	
+				this.getCells(project).then(function (response) {
+					_this2.props.setCells(response.entities);
+				});
+			}
+		}, {
+			key: 'getProjectDataTable',
+			value: function getProjectDataTable(project) {
+				if (!(project.id in this.dataTables)) {
+					var dt = this.props.user.getDataTable(project.id);
+					this.dataTables[project.id] = { table: dt, handlers: {}, websocketOpen: false };
+				}
+	
+				return this.dataTables[project.id];
+			}
+		}, {
+			key: 'getCells',
+			value: function getCells(project) {
+				return this.getProjectDataTable(project).table.listCells();
+			}
+		}, {
+			key: 'getCell',
+			value: function getCell(project, cell) {
+				return this.getProjectDataTable(project).table.getCell(cell.id);
+			}
+		}, {
+			key: 'getValue',
+			value: function getValue(project, cell) {
+				return this.getCell(project, cell).fetch();
+			}
+		}, {
+			key: 'viewCell',
+			value: function viewCell(cell, el) {
+				this.props.viewCell(cell);
+			}
+		}, {
+			key: 'render',
+			value: function render() {
+				var _this3 = this;
+	
+				var selectedProjectCellItems = this.props.selected_project_cells.map(function (cell, i) {
+					return _react2.default.createElement(
+						'li',
+						{ key: cell.id,
+							onClick: _this3.viewCell.bind(_this3, cell) },
+						cell.label
+					);
+				});
+	
+				var projectListItems = this.props.projects.map(function (project, i) {
+					return _react2.default.createElement(
+						'div',
+						{ className: 'project-section' },
+						_react2.default.createElement(
+							'div',
+							{
+								className: 'project-title',
+								onClick: _this3.selectProject.bind(_this3, project),
+								key: project.id },
+							project.name
+						),
+						_this3.props.selected_project && project.id === _this3.props.selected_project.id ? _react2.default.createElement(
+							'ul',
+							null,
+							selectedProjectCellItems
+						) : null
+					);
+				});
+	
+				return _react2.default.createElement(
+					'div',
+					{ id: 'sidebar' },
+					_react2.default.createElement(
+						'div',
+						{ id: 'sidebar-title' },
+						'Projects:'
+					),
+					_react2.default.createElement(
+						'div',
+						null,
+						projectListItems
+					)
+				);
+			}
+		}]);
+	
+		return Sidebar;
+	}(_react.Component);
+	
+	// CONNECT TO REDUX AND EXPORT COMPONENT 
+	
+	
+	var mapStateToProps = function mapStateToProps(state, ownProps) {
+		return state.home;
+	};
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(Sidebar);
 
 /***/ })
 /******/ ]);

@@ -5,14 +5,34 @@ $white: #fff;
 	height: 100%;
 }
 .home-page {
-
+	height: 100%;
 }
 .nav {
+	position: fixed;
+	width: 100%;
 	background-color: $white;
 	height: 70px;
 	display: flex;
 	justify-content: flex-end;
 	box-shadow: 0 3px 3px rgba(0,0,0,.1);
+	z-index: 2;
+}
+#container {
+	padding-top: 70px;
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	height: calc(100% - 70px);
+}
+#sidebar {
+	z-index: 1;
+	height: 100%;
+	width: 300px;
+	background-color: $white;
+	box-shadow: 3px 0 3px rgba(0,0,0,.1);
+}
+#view {
+	width: calc(100% - 300px);
 }
 .nav-btn-wrapper {
 	display: flex;
