@@ -25792,7 +25792,9 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.setLoginButtonState = undefined;
+	exports.setInitState = exports.setProjects = exports.setUser = exports.setLoginButtonState = undefined;
+	
+	var _handleActions;
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
@@ -25807,7 +25809,9 @@
 	============================================================================= */
 	
 	var init = {
-		showLogin: true
+		showLogin: true,
+		user: null,
+		projects: null
 	};
 	
 	/* ============================================================================
@@ -25815,6 +25819,9 @@
 	============================================================================= */
 	
 	var SET_LOGIN_BUTTON_STATE = 'home/SET_LOGIN_BUTTON_STATE';
+	var SET_USER = 'home/SET_USER';
+	var SET_PROJECTS = 'home/SET_PROJECTS';
+	var SET_INIT_STATE = 'home/SET_INIT_STATE';
 	
 	/* ============================================================================
 	ACTIONS - ACTION CREATORS
@@ -25823,15 +25830,36 @@
 	var setLoginButtonState = exports.setLoginButtonState = (0, _reduxActions.createAction)(SET_LOGIN_BUTTON_STATE, function (bool) {
 		return { bool: bool };
 	});
+	
+	var setUser = exports.setUser = (0, _reduxActions.createAction)(SET_USER, function (user) {
+		return { user: user };
+	});
+	
+	var setProjects = exports.setProjects = (0, _reduxActions.createAction)(SET_PROJECTS, function (projects) {
+		return { projects: projects };
+	});
+	
+	var setInitState = exports.setInitState = (0, _reduxActions.createAction)(SET_INIT_STATE);
+	
 	/* ============================================================================
 	REDUCER --- ACTION HANDLER
 	============================================================================= */
 	
-	exports.default = (0, _reduxActions.handleActions)(_defineProperty({}, SET_LOGIN_BUTTON_STATE, function (state, action) {
+	exports.default = (0, _reduxActions.handleActions)((_handleActions = {}, _defineProperty(_handleActions, SET_INIT_STATE, function (state) {
+		return init;
+	}), _defineProperty(_handleActions, SET_LOGIN_BUTTON_STATE, function (state, action) {
 		return _extends({}, state, {
 			showLogin: action.payload.bool
 		});
-	}), init);
+	}), _defineProperty(_handleActions, SET_USER, function (state, action) {
+		return _extends({}, state, {
+			user: action.payload.user
+		});
+	}), _defineProperty(_handleActions, SET_PROJECTS, function (state, action) {
+		return _extends({}, state, {
+			projects: action.payload.projects
+		});
+	}), _handleActions), init);
 
 /***/ }),
 /* 227 */
@@ -37359,9 +37387,8 @@
 		}, {
 			key: 'fluxLogout',
 			value: function fluxLogout() {
-				//need to figure out how to end session with flux
 				delete window.localStorage['__FLUX__'];
-				this.props.setLoginButtonState(true);
+				this.props.setInitState();
 			}
 		}, {
 			key: 'componentWillMount',
@@ -37375,6 +37402,12 @@
 						_this2.props.setLoginButtonState(true);
 					} else {
 						_this2.props.setLoginButtonState(false);
+						//if is loggedin set user 
+						_this2.props.setUser(Flux.helpers.getUser());
+						//get the user's projects then set them to state
+						_this2.props.user.listProjects().then(function (response) {
+							_this2.props.setProjects(response.entities);
+						});
 					}
 				});
 			}
@@ -37384,18 +37417,31 @@
 	
 				var loginLogout = this.props.showLogin ? _react2.default.createElement(
 					'button',
-					{ onClick: this.fluxLogin.bind(this) },
-					'LOGIN'
+					{ className: 'login-logout-btn',
+						onClick: this.fluxLogin.bind(this) },
+					'Login'
 				) : _react2.default.createElement(
 					'button',
-					{ onClick: this.fluxLogout.bind(this) },
-					'LOG OUT'
+					{ className: 'login-logout-btn',
+						onClick: this.fluxLogout.bind(this) },
+					'Log Out'
 				);
+	
+				var viewport = this.props.showLogin ? null : _react2.default.createElement(_fluxViewport2.default, null);
 	
 				return _react2.default.createElement(
 					'div',
 					{ className: 'home-page' },
-					loginLogout
+					_react2.default.createElement(
+						'div',
+						{ className: 'nav' },
+						_react2.default.createElement(
+							'div',
+							{ className: 'nav-btn-wrapper' },
+							loginLogout
+						)
+					),
+					viewport
 				);
 			}
 		}]);
@@ -37487,23 +37533,50 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FluxViewport = function (_Component) {
-		_inherits(FluxViewport, _Component);
+	var Viewport = function (_Component) {
+		_inherits(Viewport, _Component);
 	
-		function FluxViewport(props) {
-			_classCallCheck(this, FluxViewport);
+		function Viewport(props) {
+			_classCallCheck(this, Viewport);
 	
-			return _possibleConstructorReturn(this, (FluxViewport.__proto__ || Object.getPrototypeOf(FluxViewport)).call(this, props));
+			var _this = _possibleConstructorReturn(this, (Viewport.__proto__ || Object.getPrototypeOf(Viewport)).call(this, props));
+	
+			_this.viewport;
+			return _this;
 		}
 	
-		_createClass(FluxViewport, [{
+		_createClass(Viewport, [{
 			key: 'render',
 			value: function render() {
-				return _react2.default.createElement('div', { id: 'viewport' });
+	
+				return _react2.default.createElement(
+					'div',
+					null,
+					_react2.default.createElement('div', { id: 'view' })
+				);
+			}
+		}, {
+			key: 'componentDidMount',
+			value: function componentDidMount() {
+	
+				var box_data = [{
+					"dimensions": [2, 2, 2],
+					"origin": [0, 0, 0],
+					"primitive": "block",
+					"units": {
+						"dimensions": "meters",
+						"origin": "meters"
+					}
+				}];
+	
+				this.viewport = new FluxViewport(document.querySelector("#view"));
+				this.viewport.setupDefaultLighting();
+				this.viewport.setGeometryEntity(box_data);
+				console.log(this.viewport.running);
 			}
 		}]);
 	
-		return FluxViewport;
+		return Viewport;
 	}(_react.Component);
 	
 	// CONNECT TO REDUX AND EXPORT COMPONENT 
@@ -37512,7 +37585,7 @@
 	var mapStateToProps = function mapStateToProps(state, ownProps) {
 		return state.home;
 	};
-	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(FluxViewport);
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(Viewport);
 
 /***/ })
 /******/ ]);

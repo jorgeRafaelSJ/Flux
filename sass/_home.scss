@@ -1,6 +1,33 @@
-$white: #ffffff;
+$white: #fff;
 
-.color {
+#app {
+	width: 100%;
+	height: 100%;
+}
+.home-page {
+
+}
+.nav {
 	background-color: $white;
-	border: 1px solid white;
+	height: 70px;
+	display: flex;
+	justify-content: flex-end;
+	box-shadow: 0 3px 3px rgba(0,0,0,.1);
+}
+.nav-btn-wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 120px;
+}
+.login-logout-btn {
+	color: #aaa;
+	font-size: 14px;
+	border: none;
+	background-color: $white;
+	outline: none;
+
+	&:hover {
+		cursor: pointer;
+	}
 }

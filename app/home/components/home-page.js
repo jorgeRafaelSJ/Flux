@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import * as actions from '../redux';
 
 import * as Flux from '../../flux_sdk';
-import FluxViewport from './flux-viewport.js';
+import Viewport from './flux-viewport.js';
 
 class HomePage extends Component {
 	constructor(props) {
@@ -16,9 +16,8 @@ class HomePage extends Component {
 	}
 
 	fluxLogout() {
-		//need to figure out how to end session with flux
 		delete window.localStorage['__FLUX__'];
-		this.props.setLoginButtonState(true);
+		this.props.setInitState();
 	}
 
 	componentWillMount() {
@@ -31,6 +30,13 @@ class HomePage extends Component {
 					this.props.setLoginButtonState(true);
 				} else {
 					this.props.setLoginButtonState(false);
+					//if is loggedin set user 
+					this.props.setUser(Flux.helpers.getUser());
+					//get the user's projects then set them to state
+					this.props.user.listProjects()
+						.then((response) => {
+							this.props.setProjects(response.entities);
+						});
 				}
 			})
 	}
@@ -38,16 +44,28 @@ class HomePage extends Component {
 	render() {
 
 		let loginLogout = this.props.showLogin ? 
-					<button onClick={this.fluxLogin.bind(this)}>LOGIN</button> : 
-					<button onClick={this.fluxLogout.bind(this)}>LOG OUT</button>;
+					<button className="login-logout-btn" 
+					onClick={this.fluxLogin.bind(this)}>Login</button> : 
+					<button className="login-logout-btn" 
+					onClick={this.fluxLogout.bind(this)}>Log Out</button>;
+
+		let viewport = this.props.showLogin ? null : <Viewport></Viewport>;
 
 		return(
 			<div className="home-page">
-				{ loginLogout }
+				
+				<div className="nav">
+					<div className="nav-btn-wrapper"> 
+						{ loginLogout }
+					</div>
+				</div>
+
+				{viewport}
 			</div>
 		);
 	}
 }
+
 
 //PROPTYPES
 // HomePage.propTypes = {
