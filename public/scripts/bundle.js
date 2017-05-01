@@ -37592,6 +37592,15 @@
 			//cache of cells that already have values so we dont request them again
 			_this.cells_with_values = {};
 			_this.current_display_count = 0;
+			_this.origin = [{
+				"dimensions": [500, 500, 500],
+				"origin": [0, 0, 0],
+				"primitive": "block",
+				"units": {
+					"dimensions": "meters",
+					"origin": "meters"
+				}
+			}];
 			return _this;
 		}
 	
@@ -37628,7 +37637,7 @@
 			value: function componentDidMount() {
 				this.viewport = new FluxViewport(document.querySelector("#view"));
 				this.viewport.setupDefaultLighting();
-				this.viewport.setGeometryEntity(null);
+				this.viewport.setGeometryEntity(this.origin);
 			}
 		}, {
 			key: 'componentDidUpdate',
@@ -37637,7 +37646,7 @@
 	
 				//if no cells in view set geometry to null
 				if (this.props.cells_in_view.length === 0) {
-					this.viewport.setGeometryEntity(null);
+					this.viewport.setGeometryEntity(this.origin);
 					this.current_cell_count = 0;
 	
 					//if cell number is equal or less update viewport we have all in cache
