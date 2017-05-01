@@ -42,33 +42,36 @@ class Sidebar extends Component {
 		return this.getCell(project, cell).fetch();
 	}
 
-	viewCell(cell, el) {
-		this.props.viewCell(cell);
+	selectDeselectCell(cell, el) {
+		if(el.target.checked) {
+			this.props.viewCell(cell);
+		} else {
+			this.props.removeCell(cell);
+		}
 	}
 
 	render() {
 
 		let selectedProjectCellItems = this.props.selected_project_cells.map((cell, i) => {
 			return (
-				<li key={cell.id}
-					onClick={this.viewCell.bind(this, cell)}>
-					{cell.label}
-				</li>
+				<div key={cell.id}>
+					<input type="checkbox" onClick={this.selectDeselectCell.bind(this, cell)}/>
+					<label>{cell.label}</label>
+				</div>
 			)
 		});
 
 		let projectListItems = this.props.projects.map((project, i) => {
 			return (
-				<div className="project-section">
+				<div className="project-section" key={project.id}>
 					<div
 						className="project-title"
-						onClick={this.selectProject.bind(this, project)}
-						key={project.id}>
+						onClick={this.selectProject.bind(this, project)}>
 						{project.name}
 					</div>
 					
 					{ this.props.selected_project && project.id === this.props.selected_project.id ?
-						<ul>{selectedProjectCellItems}</ul> : null
+						<div>{selectedProjectCellItems}</div> : null
 					}
 				</div>)
 		});

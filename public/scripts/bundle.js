@@ -25792,7 +25792,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.viewCell = exports.setCells = exports.setInitState = exports.selectProject = exports.setProjects = exports.setUser = exports.setLoginButtonState = undefined;
+	exports.removeCell = exports.viewCell = exports.setCells = exports.setInitState = exports.selectProject = exports.setProjects = exports.setUser = exports.setLoginButtonState = undefined;
 	
 	var _handleActions;
 	
@@ -25830,6 +25830,7 @@
 	var SELECT_PROJECT = 'home/SELECT_PROJECT';
 	var SET_CELLS = 'home/SET_CELLS';
 	var VIEW_CELL = 'home/VIEW_CELL';
+	var REMOVE_CELL = 'home/REMOVE_CELL';
 	
 	/* ============================================================================
 	ACTIONS - ACTION CREATORS
@@ -25858,6 +25859,10 @@
 	});
 	
 	var viewCell = exports.viewCell = (0, _reduxActions.createAction)(VIEW_CELL, function (cell) {
+		return { cell: cell };
+	});
+	
+	var removeCell = exports.removeCell = (0, _reduxActions.createAction)(REMOVE_CELL, function (cell) {
 		return { cell: cell };
 	});
 	
@@ -25894,6 +25899,15 @@
 	
 		return _extends({}, state, {
 			cells_in_view: cellsArray
+		});
+	}), _defineProperty(_handleActions, REMOVE_CELL, function (state, action) {
+		var cellsArray = [].concat(_toConsumableArray(state.cells_in_view));
+		var newCellsArray = cellsArray.filter(function (cell) {
+			return cell.id !== action.payload.cell.id;
+		});
+	
+		return _extends({}, state, {
+			cells_in_view: newCellsArray
 		});
 	}), _handleActions), init);
 
@@ -37392,11 +37406,11 @@
 	
 	var Flux = _interopRequireWildcard(_flux_sdk);
 	
-	var _fluxViewport = __webpack_require__(/*! ./flux-viewport */ 415);
+	var _fluxViewport = __webpack_require__(/*! ./flux-viewport */ 414);
 	
 	var _fluxViewport2 = _interopRequireDefault(_fluxViewport);
 	
-	var _sidebar = __webpack_require__(/*! ./sidebar */ 416);
+	var _sidebar = __webpack_require__(/*! ./sidebar */ 415);
 	
 	var _sidebar2 = _interopRequireDefault(_sidebar);
 	
@@ -37538,8 +37552,7 @@
 	var helpers = exports.helpers = new FluxHelpers(sdk);
 
 /***/ }),
-/* 414 */,
-/* 415 */
+/* 414 */
 /*!**********************************************!*\
   !*** ./app/home/components/flux-viewport.js ***!
   \**********************************************/
@@ -37588,6 +37601,9 @@
 			var _this = _possibleConstructorReturn(this, (Viewport.__proto__ || Object.getPrototypeOf(Viewport)).call(this, props));
 	
 			_this.viewport;
+			//cache of cells that already have values so we dont request them again
+			_this.cells_with_values = {};
+			_this.current_display_count = 0;
 			return _this;
 		}
 	
@@ -37600,13 +37616,28 @@
 		}, {
 			key: 'render',
 			value: function render() {
-	
 				return _react2.default.createElement('div', { id: 'view' });
+			}
+		}, {
+			key: 'updateViewport',
+			value: function updateViewport() {
+				var _this2 = this;
+	
+				var data = [];
+	
+				this.props.cells_in_view.forEach(function (cell, index) {
+					if (_this2.cells_with_values[cell.id]) {
+						data.push(_this2.cells_with_values[cell.id].value);
+					}
+				});
+	
+				if (FluxViewport.isKnownGeom(data)) {
+					this.viewport.setGeometryEntity(data);
+				}
 			}
 		}, {
 			key: 'componentDidMount',
 			value: function componentDidMount() {
-	
 				this.viewport = new FluxViewport(document.querySelector("#view"));
 				this.viewport.setupDefaultLighting();
 				this.viewport.setGeometryEntity(null);
@@ -37614,14 +37645,30 @@
 		}, {
 			key: 'componentDidUpdate',
 			value: function componentDidUpdate() {
-				var _this2 = this;
+				var _this3 = this;
 	
-				console.log('new viewport');
-				this.props.cells_in_view.forEach(function (cell) {
-					_this2.getValue(_this2.props.selected_project, cell).then(function (response) {
-						console.log(response);
+				if (this.props.cells_in_view.length === 0) {
+					this.viewport.setGeometryEntity(null);
+					this.current_cell_count = 0;
+				} else if (this.props.cells_in_view.length <= this.current_display_count) {
+					this.updateViewport();
+					this.current_cell_count = this.props.cells_in_view.length;
+				} else {
+					var allCached = true;
+					this.current_display_count++;
+	
+					this.props.cells_in_view.forEach(function (cell) {
+						if (!(cell.id in _this3.cells_with_values)) {
+							allCached = false;
+							_this3.getValue(_this3.props.selected_project, cell).then(function (data) {
+								_this3.cells_with_values[cell.id] = data;
+								_this3.updateViewport();
+							});
+						}
 					});
-				});
+	
+					if (allCached) this.updateViewport();
+				}
 			}
 		}]);
 	
@@ -37637,7 +37684,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, actions)(Viewport);
 
 /***/ }),
-/* 416 */
+/* 415 */
 /*!****************************************!*\
   !*** ./app/home/components/sidebar.js ***!
   \****************************************/
@@ -37726,9 +37773,13 @@
 				return this.getCell(project, cell).fetch();
 			}
 		}, {
-			key: 'viewCell',
-			value: function viewCell(cell, el) {
-				this.props.viewCell(cell);
+			key: 'selectDeselectCell',
+			value: function selectDeselectCell(cell, el) {
+				if (el.target.checked) {
+					this.props.viewCell(cell);
+				} else {
+					this.props.removeCell(cell);
+				}
 			}
 		}, {
 			key: 'render',
@@ -37737,27 +37788,30 @@
 	
 				var selectedProjectCellItems = this.props.selected_project_cells.map(function (cell, i) {
 					return _react2.default.createElement(
-						'li',
-						{ key: cell.id,
-							onClick: _this3.viewCell.bind(_this3, cell) },
-						cell.label
+						'div',
+						{ key: cell.id },
+						_react2.default.createElement('input', { type: 'checkbox', onClick: _this3.selectDeselectCell.bind(_this3, cell) }),
+						_react2.default.createElement(
+							'label',
+							null,
+							cell.label
+						)
 					);
 				});
 	
 				var projectListItems = this.props.projects.map(function (project, i) {
 					return _react2.default.createElement(
 						'div',
-						{ className: 'project-section' },
+						{ className: 'project-section', key: project.id },
 						_react2.default.createElement(
 							'div',
 							{
 								className: 'project-title',
-								onClick: _this3.selectProject.bind(_this3, project),
-								key: project.id },
+								onClick: _this3.selectProject.bind(_this3, project) },
 							project.name
 						),
 						_this3.props.selected_project && project.id === _this3.props.selected_project.id ? _react2.default.createElement(
-							'ul',
+							'div',
 							null,
 							selectedProjectCellItems
 						) : null

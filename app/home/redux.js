@@ -26,6 +26,7 @@ const SET_INIT_STATE = 'home/SET_INIT_STATE';
 const SELECT_PROJECT = 'home/SELECT_PROJECT';
 const SET_CELLS = 'home/SET_CELLS';
 const VIEW_CELL = 'home/VIEW_CELL';
+const REMOVE_CELL = 'home/REMOVE_CELL';
 
 /* ============================================================================
 ACTIONS - ACTION CREATORS
@@ -44,6 +45,8 @@ export const setInitState = createAction(SET_INIT_STATE);
 export const setCells = createAction(SET_CELLS, (cells) => ({cells}));
 
 export const viewCell = createAction(VIEW_CELL, (cell) => ({cell}));
+
+export const removeCell = createAction(REMOVE_CELL, (cell) => ({cell}));
 
 /* ============================================================================
 REDUCER --- ACTION HANDLER
@@ -89,6 +92,15 @@ export default handleActions({
 		return {
 			...state, 
 			cells_in_view: cellsArray
+		}
+	},
+	[REMOVE_CELL]: (state, action) => {
+		let cellsArray = [...state.cells_in_view];
+		let newCellsArray = cellsArray.filter((cell) => { return cell.id !== action.payload.cell.id });
+
+		return {
+			...state, 
+			cells_in_view: newCellsArray
 		}
 	}
 }, init);
