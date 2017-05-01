@@ -45,12 +45,18 @@ class Viewport extends Component {
 	}
 
 	componentDidUpdate() {
+		//if no cells in view set geometry to null
 		if(this.props.cells_in_view.length === 0) {
 			this.viewport.setGeometryEntity(null);
 			this.current_cell_count = 0;
+
+		//if cell number is equal or less update viewport we have all in cache
+		// just will be removing or updating
 		} else if(this.props.cells_in_view.length <= this.current_display_count) {
 			this.updateViewport();
 			this.current_cell_count = this.props.cells_in_view.length;
+
+		//request the value from the cell in view that is not in cache
 		} else {
 			let allCached = true;
 			this.current_display_count++;

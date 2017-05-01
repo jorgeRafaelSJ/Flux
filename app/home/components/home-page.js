@@ -72,18 +72,6 @@ class HomePage extends Component {
 	}
 }
 
-// PROPTYPES
-// HomePage.propTypes = {
-// 	user: React.PropTypes.shape({
-// 		first: React.PropTypes.string.isRequired,
-// 		last: React.PropTypes.string.isRequired
-// 	}).isRequired,
-// 	sayHello: React.PropTypes.func.isRequired,
-// 	clearForm: React.PropTypes.func.isRequired,
-// 	changeLast: React.PropTypes.func.isRequired, 
-// 	changeFirst: React.PropTypes.func.isRequired 
-// }
-
 // CONNECT TO REDUX AND EXPORT COMPONENT 
 const mapStateToProps = (state, ownProps) => state.home;
 export default connect(mapStateToProps, actions)(HomePage);

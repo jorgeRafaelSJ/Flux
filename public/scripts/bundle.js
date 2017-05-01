@@ -37510,18 +37510,6 @@
 		return HomePage;
 	}(_react.Component);
 	
-	// PROPTYPES
-	// HomePage.propTypes = {
-	// 	user: React.PropTypes.shape({
-	// 		first: React.PropTypes.string.isRequired,
-	// 		last: React.PropTypes.string.isRequired
-	// 	}).isRequired,
-	// 	sayHello: React.PropTypes.func.isRequired,
-	// 	clearForm: React.PropTypes.func.isRequired,
-	// 	changeLast: React.PropTypes.func.isRequired, 
-	// 	changeFirst: React.PropTypes.func.isRequired 
-	// }
-	
 	// CONNECT TO REDUX AND EXPORT COMPONENT 
 	
 	
@@ -37647,12 +37635,18 @@
 			value: function componentDidUpdate() {
 				var _this3 = this;
 	
+				//if no cells in view set geometry to null
 				if (this.props.cells_in_view.length === 0) {
 					this.viewport.setGeometryEntity(null);
 					this.current_cell_count = 0;
+	
+					//if cell number is equal or less update viewport we have all in cache
+					// just will be removing or updating
 				} else if (this.props.cells_in_view.length <= this.current_display_count) {
 					this.updateViewport();
 					this.current_cell_count = this.props.cells_in_view.length;
+	
+					//request the value from the cell in view that is not in cache
 				} else {
 					var allCached = true;
 					this.current_display_count++;
@@ -37763,16 +37757,6 @@
 				return this.getProjectDataTable(project).table.listCells();
 			}
 		}, {
-			key: 'getCell',
-			value: function getCell(project, cell) {
-				return this.getProjectDataTable(project).table.getCell(cell.id);
-			}
-		}, {
-			key: 'getValue',
-			value: function getValue(project, cell) {
-				return this.getCell(project, cell).fetch();
-			}
-		}, {
 			key: 'selectDeselectCell',
 			value: function selectDeselectCell(cell, el) {
 				if (el.target.checked) {
@@ -37789,7 +37773,7 @@
 				var selectedProjectCellItems = this.props.selected_project_cells.map(function (cell, i) {
 					return _react2.default.createElement(
 						'div',
-						{ key: cell.id },
+						{ className: 'project-cell-selector', key: cell.id },
 						_react2.default.createElement('input', { type: 'checkbox', onClick: _this3.selectDeselectCell.bind(_this3, cell) }),
 						_react2.default.createElement(
 							'label',
@@ -37812,7 +37796,7 @@
 						),
 						_this3.props.selected_project && project.id === _this3.props.selected_project.id ? _react2.default.createElement(
 							'div',
-							null,
+							{ className: 'project-cells-div' },
 							selectedProjectCellItems
 						) : null
 					);

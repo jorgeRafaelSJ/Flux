@@ -34,13 +34,6 @@ class Sidebar extends Component {
 		return this.getProjectDataTable(project).table.listCells();
 	}
 
-	getCell(project, cell) {
-		return this.getProjectDataTable(project).table.getCell(cell.id);
-	}
-
-	getValue(project, cell) {
-		return this.getCell(project, cell).fetch();
-	}
 
 	selectDeselectCell(cell, el) {
 		if(el.target.checked) {
@@ -54,7 +47,7 @@ class Sidebar extends Component {
 
 		let selectedProjectCellItems = this.props.selected_project_cells.map((cell, i) => {
 			return (
-				<div key={cell.id}>
+				<div className="project-cell-selector" key={cell.id}>
 					<input type="checkbox" onClick={this.selectDeselectCell.bind(this, cell)}/>
 					<label>{cell.label}</label>
 				</div>
@@ -71,8 +64,7 @@ class Sidebar extends Component {
 					</div>
 					
 					{ this.props.selected_project && project.id === this.props.selected_project.id ?
-						<div>{selectedProjectCellItems}</div> : null
-					}
+						<div className="project-cells-div">{selectedProjectCellItems}</div> : null }
 				</div>)
 		});
 
